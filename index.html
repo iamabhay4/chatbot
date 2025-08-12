@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUHI PIZZA Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+    :root {
+        --primary-color: #e63946; /* A vibrant red */
+        --secondary-color: #fca311; /* A warm orange for accents */
+        --bg-color: #fdf0e1; /* A creamy, warm background */
+        --bot-msg-bg: #ffffff;
+        --user-msg-bg: var(--primary-color);
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --font-family: 'Nunito', sans-serif;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: var(--font-family);
+        background: var(--bg-color);
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        color: var(--text-dark);
+    }
+
+    header {
+        background: var(--primary-color);
+        color: var(--text-light);
+        padding: 1rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+    }
+
+    #chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        scroll-behavior: smooth;
+    }
+
+    .message-wrapper {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        max-width: 80%;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-light);
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .bot .avatar {
+        background: var(--secondary-color);
+    }
+
+    .user .avatar {
+        background: #a2d2ff;
+    }
+
+    .message {
+        padding: 12px 18px;
+        border-radius: 18px;
+        line-height: 1.5;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+
+    .bot .message {
+        background: var(--bot-msg-bg);
+        border-top-left-radius: 4px;
+    }
+
+    .user {
+        align-self: flex-end;
+        flex-direction: row-reverse; /* Puts avatar on the right */
+    }
+
+    .user .message {
+        background: var(--user-msg-bg);
+        color: var(--text-light);
+        border-top-right-radius: 4px;
+    }
+
+    .input-area {
+        background: #fff;
+        box-shadow: 0 -4px 6px rgba(0,0,0,0.05);
+        z-index: 10;
+    }
+
+    .quick-replies {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 15px 20px 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .quick-reply {
+        background: #fff;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        padding: 8px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .quick-reply:hover {
+        background: var(--primary-color);
+        color: #fff;
+    }
+
+    #input-container {
+        display: flex;
+        padding: 15px 20px;
+        gap: 10px;
+    }
+
+    #user-input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid #ccc;
+        border-radius: 25px;
+        outline: none;
+        font-size: 1rem;
+        font-family: var(--font-family);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #user-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
+    }
+
+    #send-btn {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease, background-color 0.2s;
+    }
+
+    #send-btn:hover {
+        transform: scale(1.1);
+        background-color: #c91c28;
+    }
+
+    #send-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    /* Typing indicator styles */
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+    }
+    .typing-indicator span {
+        height: 8px;
+        width: 8px;
+        margin: 0 2px;
+        background-color: #aaa;
+        border-radius: 50%;
+        display: inline-block;
+        animation: bob 1.4s infinite ease-in-out both;
+    }
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bob {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1.0); }
+    }
+</style>
+</head>
+<body>
+
+<header><i class="fa-solid fa-pizza-slice"></i> RUHI PIZZA Bot</header>
+
+<div id="chat-container">
+    <div class="message-wrapper bot">
+        <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+        <div class="message">Hi! Welcome to RUHI PIZZA. How can I help you today? 🍕</div>
+    </div>
+</div>
+
+<div class="input-area">
+    <div class="quick-replies">
+        <button class="quick-reply">🍕 Show me the menu</button>
+        <button class="quick-reply">📦 Track my order</button>
+        <button class="quick-reply">💰 Current offers</button>
+    </div>
+    
+    <div id="input-container">
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button id="send-btn" aria-label="Send Message"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script>
+const chatContainer = document.getElementById("chat-container");
+const userInput = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
+const quickReplyButtons = document.querySelectorAll(".quick-reply");
+
+// --- IMPORTANT SECURITY NOTE ---
+// The API key is exposed here in the frontend code.
+// For a real-world application, this key should be handled by a secure backend server
+// that you create, which then makes the call to the Groq API.
+// Never expose your secret keys on the client-side in a production environment.
+const GROQ_API_KEY = "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";
+
+async function sendMessage(message) {
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage) return;
+
+    // Display user's message
+    addMessage(trimmedMessage, "user");
+    userInput.value = "";
+
+    // Disable input while bot is replying
+    toggleInput(false);
+    showTypingIndicator();
+
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${GROQ_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "llama3-70b-8192", // Use a valid and current model name
+                messages: [
+                    { 
+                        role: "system", 
+                        content: "You are a friendly and helpful AI assistant for a pizza shop named RUHI PIZZA. Your personality is cheerful and enthusiastic. Keep your responses concise, friendly, and use pizza-related emojis where appropriate (like 🍕, 🧀, 🎉). Do not reveal that you are an AI model. Just act as the pizza bot." 
+                    },
+                    { role: "user", content: trimmedMessage }
+                ]
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error(`API error: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        const botReply = data.choices[0]?.message?.content || "I'm not sure how to respond to that, let's talk about pizza! 🍕";
+        
+        // Display bot's reply
+        addMessage(botReply, "bot");
+
+    } catch (error) {
+        console.error("Error fetching from API:", error);
+        addMessage("Oops! 💥 Our pizza oven seems to be having a moment. Please try again in a little bit.", "bot");
+    } finally {
+        // Re-enable input and remove typing indicator
+        hideTypingIndicator();
+        toggleInput(true);
+    }
+}
+
+function addMessage(text, sender) {
+    const messageWrapper = document.createElement("div");
+    messageWrapper.classList.add("message-wrapper", sender);
+
+    const avatar = document.createElement("div");
+    avatar.classList.add("avatar");
+    avatar.innerHTML = sender === 'bot' ? '<i class="fa-solid fa-robot"></i>' : '<i class="fa-solid fa-user"></i>';
+
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message");
+    messageDiv.textContent = text;
+
+    messageWrapper.appendChild(avatar);
+    messageWrapper.appendChild(messageDiv);
+    chatContainer.appendChild(messageWrapper);
+
+    // Scroll to the latest message
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function showTypingIndicator() {
+    // Don't add if one already exists
+    if (document.getElementById("typing-indicator")) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.id = "typing-indicator";
+    wrapper.classList.add("message-wrapper", "bot");
+
+    const avatar = document.createElement("div");
+    avatar.classList.add("avatar");
+    avatar.innerHTML = '<i class="fa-solid fa-robot"></i>';
+
+    const indicator = document.createElement("div");
+    indicator.classList.add("message", "typing-indicator");
+    indicator.innerHTML = '<span></span><span></span><span></span>';
+
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(indicator);
+    chatContainer.appendChild(wrapper);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const indicator = document.getElementById("typing-indicator");
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+function toggleInput(enabled) {
+    userInput.disabled = !enabled;
+    sendBtn.disabled = !enabled;
+    if (enabled) {
+        userInput.focus();
+    }
+}
+
+// Event Listeners
+sendBtn.addEventListener("click", () => sendMessage(userInput.value));
+userInput.addEventListener("keypress", e => { 
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault(); // Prevents new line on Enter
+        sendMessage(userInput.value); 
+    }
+});
+
+quickReplyButtons.forEach(btn => {
+    btn.addEventListener("click", () => sendMessage(btn.textContent));
+});
+
+// Initial focus on the input field
+userInput.focus();
+</script>
+
+</body>
+</html>
